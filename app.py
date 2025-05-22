@@ -9,14 +9,14 @@ def listar_mensagens():
 
 @app.route('/mensagens', methods=['POST'])
 def adicionar_mensagem():
-    dados = request.get_json()
+    dadas = request.get_json()
 
-    if not dados or 'texto' not in dados:
+    if not dadas or 'texto' not in dadas:
         return jsonify({'erro': 'Campo "texto" é obrigatório'}), 400
 
     nova_mensagem = {
         'id': len(mensagens) + 1,
-        'texto': dados['texto']
+        'texto': dadas['texto']
     }
 
     mensagens.append(nova_mensagem)
