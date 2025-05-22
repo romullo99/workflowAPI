@@ -1,29 +1,22 @@
 import pytest
-from app import app, mensagens
-
-@pytest.fixture(autouse=True)
-def limpar_mensagens():
-    mensagens.clear()  # limpa antes de cada teste
+from app import app
 
 @pytest.fixture
-def cliente():
+def client():
     with app.test_client() as client:
         yield client
 
-def test_get_mensagens_vazio(cliente):
-    resposta = cliente.get('/mensagens')
-    assert resposta.status_code == 200
-    assert resposta.get_json() == []
+def test_get_root(client):
+    response = client.get('/')
+    assert response.status_code == 200
+    assert response.get_json() == {"message": "Hello, World!"}
 
-def test_post_mensagem_sucesso(cliente):
-    dados = {'texto': 'Mensagem de teste'}
-    resposta = cliente.post('/mensagens', json=dados)
-    assert resposta.status_code == 201
-    json = resposta.get_json()
-    assert json['id'] == 1
-    assert json['texto'] == 'Mensagem de teste'
+def test_post_data(client):
+    response = client.post('/data', json={"name": "Romullo"})
+    assert response.status_code == 200
+    assert response.get_json() == {"received": {"name": "Romullo"}}
 
-def test_post_mensagem_sem_texto(cliente):
-    resposta = cliente.post('/mensagens', json={})
-    assert resposta.status_code == 400
-    assert resposta.get_json()['erro'] == 'Campo "texto" é obrigatório'
+def test_post_invalid_content_type(client):
+    response = client.post('/data', data="name=Romullo", headers={"Content-Type": "text/plain"})
+    assert response.status_code == 415
+    assert "error" in response.get_json()
